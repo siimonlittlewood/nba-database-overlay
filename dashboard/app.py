@@ -1,8 +1,16 @@
+import sys
+from pathlib import Path
+
 import pandas as pd
 import requests
 import streamlit as st
 
-from db.config import get_settings
+# Streamlit Cloud runs this script without the repo root on sys.path (unlike
+# local `streamlit run dashboard/app.py` invoked from the repo root), so the
+# sibling db/ package can't be found without this.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from db.config import get_settings  # noqa: E402
 
 st.set_page_config(page_title="NBA Stats Agent", layout="wide")
 
