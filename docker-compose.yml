@@ -1,0 +1,30 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: nba_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-nba}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nba}
+      POSTGRES_DB: ${POSTGRES_DB:-nba}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nba} -d ${POSTGRES_DB:-nba}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  adminer:
+    image: adminer:latest
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pg_data:
