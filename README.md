@@ -1,19 +1,26 @@
 # NBA SQL + Agentic Analytics Platform
 
 A full-stack NBA analytics platform: an 80-season historical data pipeline (1946-47
-through 2025-26) sitting behind a defense-in-depth, agentic text-to-SQL service built
-directly on the Claude API — no LangChain, no agent framework — with a live Streamlit
-dashboard on top.
+through 2025-26) sitting behind an **agentic RAG** service built directly on the Claude
+API — no LangChain, no agent framework — with a live Streamlit dashboard on top. Instead
+of retrieving from a vector store, the agent retrieves by autonomously writing and
+running SQL against a live Postgres database, grounding every answer in real rows it
+just queried rather than the model's own recall.
 
 **Live demo:** https://nba-database-overlay.streamlit.app
 
 ## Highlights
 
-- **Hand-rolled agentic tool-use loop**, not a framework. `agent_service/agent.py`
-  drives the Claude Messages API directly: the model calls a `get_schema` tool, writes
-  SQL, calls a `run_query` tool, sees real errors and self-corrects, then answers — with
-  the exact SQL it ran always surfaced alongside the answer, so every answer is
+- **Agentic RAG over structured data, not a single vector lookup.** Most RAG retrieves
+  static text chunks once and stuffs them in the prompt; here retrieval is a live,
+  multi-step decision the model itself drives: it calls `get_schema` to see what's
+  queryable, writes SQL, calls `run_query`, reads the real result (or a real error) and
+  self-corrects, looping until it has actual retrieved rows to ground the answer in —
+  with the exact SQL it ran always surfaced alongside the answer, so every answer is
   independently verifiable rather than a black box.
+- **Hand-rolled tool-use loop, not a framework.** `agent_service/agent.py` drives the
+  Claude Messages API directly (no LangChain/LlamaIndex) — the whole retrieval loop
+  above is under 90 lines of explicit tool-dispatch code, not framework abstraction.
 - **Defense in depth for LLM-generated SQL**, three independent layers rather than one:
   1. A dedicated `agent_readonly` Postgres role, `SELECT`-only at the database level
      with an enforced statement timeout — enforced by Postgres itself, not application code.
