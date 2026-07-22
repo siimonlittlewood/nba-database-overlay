@@ -27,6 +27,12 @@ class Settings(BaseSettings):
 
     # Phase 2 dashboard -- where it reaches the agent service's /ask endpoint.
     agent_service_url: str = "http://localhost:8000"
+    # Shared secret between the dashboard and agent_service. If unset, the
+    # agent service accepts requests with no auth (fine for local dev, where
+    # both run on localhost) -- set this before deploying publicly, since the
+    # agent service's URL is otherwise reachable directly, bypassing the
+    # dashboard password entirely.
+    agent_api_key: str | None = None
     # If unset, the dashboard has no password gate (fine for local dev).
     # Set this before deploying publicly -- every question costs real
     # Anthropic API usage, so an open deployment is an open tab.

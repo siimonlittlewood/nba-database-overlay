@@ -72,9 +72,12 @@ if question:
     with st.chat_message("assistant"):
         with st.spinner("Querying..."):
             try:
+                api_key = get_settings().agent_api_key
+                headers = {"X-API-Key": api_key} if api_key else {}
                 response = requests.post(
                     f"{get_settings().agent_service_url}/ask",
                     json={"question": question},
+                    headers=headers,
                     timeout=60,
                 )
                 response.raise_for_status()

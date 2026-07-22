@@ -23,3 +23,5 @@ services:
         sync: false
       - key: PLAY_BY_PLAY_AVAILABLE
         value: "false"
+      - key: AGENT_API_KEY
+        sync: false
