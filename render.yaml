@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: nba-agent-service
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn agent_service.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: POSTGRES_HOST
+        sync: false
+      - key: POSTGRES_PORT
+        value: "5432"
+      - key: POSTGRES_DB
+        sync: false
+      - key: POSTGRES_QUERY
+        value: "sslmode=require&channel_binding=require"
+      - key: AGENT_DB_USER
+        value: agent_readonly
+      - key: AGENT_DB_PASSWORD
+        sync: false
+      - key: PLAY_BY_PLAY_AVAILABLE
+        value: "false"

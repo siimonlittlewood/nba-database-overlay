@@ -8,6 +8,11 @@ from agent_service.agent import AgentError, ask
 app = FastAPI(title="NBA stats agent service")
 
 
+@app.get("/")
+def health() -> dict[str, str]:
+    return {"status": "ok"}
+
+
 class AskRequest(BaseModel):
     question: str
 

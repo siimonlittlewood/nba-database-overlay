@@ -11,6 +11,10 @@ class Settings(BaseSettings):
     postgres_db: str = "nba"
     postgres_host: str = "localhost"
     postgres_port: int = 5433
+    # e.g. "sslmode=require&channel_binding=require" for a hosted provider
+    # (Neon, Supabase) that mandates TLS -- unused (empty) for local docker-
+    # compose Postgres, which doesn't need it.
+    postgres_query: str = ""
 
     # Phase 4 agent service -- a SEPARATE, DB-level-restricted role, not the
     # owner connection above. "changeme-dev-only" is fine for a local
@@ -35,19 +39,17 @@ class Settings(BaseSettings):
     # human user sees the same caveat up front).
     play_by_play_available: bool = True
 
+    def _url(self, user: str, password: str) -> str:
+        base = f"postgresql+psycopg://{user}:{password}@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
+        return f"{base}?{self.postgres_query}" if self.postgres_query else base
+
     @property
     def database_url(self) -> str:
-        return (
-            f"postgresql+psycopg://{self.postgres_user}:{self.postgres_password}"
-            f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
-        )
+        return self._url(self.postgres_user, self.postgres_password)
 
     @property
     def agent_database_url(self) -> str:
-        return (
-            f"postgresql+psycopg://{self.agent_db_user}:{self.agent_db_password}"
-            f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
-        )
+        return self._url(self.agent_db_user, self.agent_db_password)
 
 
 @lru_cache
