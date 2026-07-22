@@ -35,6 +35,12 @@ st.caption(
     "Plain-English questions answered by a read-only text-to-SQL agent. "
     "The SQL it ran is always shown alongside the answer, for transparency."
 )
+if not get_settings().play_by_play_available:
+    st.info(
+        "This deployment doesn't include play-by-play/shot-detail data (omitted to fit a "
+        "free-tier database). Box-score stats -- points, rebounds, assists, etc. -- still "
+        "cover all of NBA history."
+    )
 
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []

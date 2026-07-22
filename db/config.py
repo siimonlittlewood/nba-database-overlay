@@ -28,6 +28,13 @@ class Settings(BaseSettings):
     # Anthropic API usage, so an open deployment is an open tab.
     dashboard_password: str | None = None
 
+    # False for the public deployment's hosted DB, which omits play_by_play
+    # (3GB, doesn't fit a free-tier hosted Postgres). True locally, where
+    # the full table exists. Read by both agent_service (so it explains the
+    # gap instead of erroring on a missing table) and the dashboard (so the
+    # human user sees the same caveat up front).
+    play_by_play_available: bool = True
+
     @property
     def database_url(self) -> str:
         return (

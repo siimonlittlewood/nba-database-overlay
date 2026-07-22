@@ -9,7 +9,9 @@ memory/docs the model never sees.
 
 from __future__ import annotations
 
-SCHEMA_DESCRIPTION = """
+from db.config import get_settings
+
+BASE_SCHEMA_DESCRIPTION = """
 All tables are Postgres, accessed read-only. Season labels look like '2025-26'.
 game_type is one of: 'Regular Season', 'Playoffs', 'Pre Season'/'Preseason',
 'Play-In Tournament', 'NBA Cup'/'NBA Emirates Cup', 'All-Star Game'.
@@ -54,6 +56,9 @@ player_season_stats (MATERIALIZED VIEW -- prefer this over aggregating
   for the same player-season -- filter to game_type = 'Regular Season'
   unless the question is specifically about playoffs.
 
+"""
+
+PLAY_BY_PLAY_SCHEMA = """
 play_by_play(id, game_id, sequence, period, clock, event_type, sub_type,
              description, player_id, player2_id, player3_id, team_id,
              score_home, score_away, shot_x, shot_y, shot_distance, shot_made)
@@ -82,6 +87,20 @@ play_by_play(id, game_id, sequence, period, clock, event_type, sub_type,
     gap) -- NULL elsewhere, not zero.
 """
 
+PLAY_BY_PLAY_UNAVAILABLE_NOTE = """
+play_by_play: NOT AVAILABLE in this deployment (the hosted database omits
+  it -- 3GB, doesn't fit a free-tier host). There is no play_by_play table
+  to query here. If a question needs event-level detail (shot charts,
+  assist sequencing, clutch-time plays, exact shot location), say plainly
+  that this deployment doesn't have play-by-play data and only has
+  box-score-level stats (player_game_stats/team_game_stats) -- which do
+  cover all of NBA history for points/rebounds/assists/etc, just not
+  possession-by-possession detail. Don't attempt to query a play_by_play
+  table; it doesn't exist here.
+"""
+
 
 def get_schema() -> str:
-    return SCHEMA_DESCRIPTION
+    if get_settings().play_by_play_available:
+        return BASE_SCHEMA_DESCRIPTION + PLAY_BY_PLAY_SCHEMA
+    return BASE_SCHEMA_DESCRIPTION + PLAY_BY_PLAY_UNAVAILABLE_NOTE
