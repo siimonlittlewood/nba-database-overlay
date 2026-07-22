@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import datetime
 import decimal
+import logging
 from typing import Any
 
 from sqlalchemy import text
@@ -15,6 +16,8 @@ from agent_service import schema
 from agent_service.db import engine
 from agent_service.sql_guard import UnsafeQueryError, validate_and_limit
 from db.config import get_settings
+
+logger = logging.getLogger(__name__)
 
 TOOL_DEFINITIONS = [
     {
@@ -75,6 +78,7 @@ def run_query(sql: str) -> dict:
             result = conn.execute(text(safe_sql))
             rows = [{k: _json_safe(v) for k, v in row.items()} for row in result.mappings()]
     except Exception as exc:
+        logger.exception("run_query failed against the database")
         return {"error": str(exc)}
 
     return {"sql": safe_sql, "rows": rows}
